@@ -1,12 +1,14 @@
 package edu.kvcc.cis298.inclass3.inclass3;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +19,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -33,11 +36,14 @@ public class CrimeListFragment extends Fragment {
     private boolean mSubtitleVisible;
 
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
+    private static final String TAG = "CrimeFragment";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        //execute starts the doinbackground task
+        new FetchCrimesTask().execute();
     }
 
     @Nullable
@@ -281,5 +287,23 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
+    private class FetchCrimesTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            new CrimeFetcher().fetchCrimes();
+            //try {
+            //    String result = new CrimeFetcher().getUrlString("http://barnesbrothers.homeserver.com/crimeapi");
+            //    Log.i(TAG, "Fetched contents of URL: " + result);
+            //} catch (IOException ioe) {
+            //    Log.e(TAG, "Failed to fetch URL: " + ioe);
+            //}
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
 
 }
