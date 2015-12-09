@@ -155,11 +155,13 @@ public class CrimeListFragment extends Fragment {
             //Create a new crimeAdapter and send it over the list
             //of crimes. Crime adapter needs the list of crimes so
             //that it can work with the recyclerview to display them.
-            mAdapter = new CrimeAdapter(crimes);
+            //mAdapter = new CrimeAdapter(crimes);
 
             //Take the adapter that we just created, and set it as the
             //adapter that the recycler view is going to use.
-            mCrimeRecyclerView.setAdapter(mAdapter);
+            //mCrimeRecyclerView.setAdapter(mAdapter);
+
+            setUpAdapter();
 
         //Else, the adapter already exists, so we just need to notify
         //that the data set might have changed. This will
@@ -170,6 +172,14 @@ public class CrimeListFragment extends Fragment {
 
         updateSubtitle();
 
+    }
+
+    private void setUpAdapter() {
+        if (isAdded()) {
+            mAdapter = new CrimeAdapter(CrimeLab.get(getActivity()).getCrimes());
+            mCrimeRecyclerView.setAdapter(mAdapter);
+
+        }
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -287,22 +297,24 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
-    private class FetchCrimesTask extends AsyncTask<Void, Void, Void> {
+    private class FetchCrimesTask extends AsyncTask<Void, Void, List<Crime>> {
         @Override
-        protected Void doInBackground(Void... voids) {
-            new CrimeFetcher().fetchCrimes();
+        protected List<Crime> doInBackground(Void... voids) {
+            return new CrimeFetcher().fetchCrimes();
             //try {
             //    String result = new CrimeFetcher().getUrlString("http://barnesbrothers.homeserver.com/crimeapi");
             //    Log.i(TAG, "Fetched contents of URL: " + result);
             //} catch (IOException ioe) {
             //    Log.e(TAG, "Failed to fetch URL: " + ioe);
             //}
-            return null;
+
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(List<Crime> crimes) {
+            CrimeLab lab = CrimeLab.get(getActivity());
+            lab.setCrimes(crimes);
+            setUpAdapter();
         }
     }
 

@@ -62,6 +62,10 @@ public class CrimeLab {
         return mCrimes;
     }
 
+    public void setCrimes(List<Crime> crimes) {
+        mCrimes = crimes;
+    }
+
     //Method to get a specific crime based on the
     //UUID that is passed in.
     public Crime getCrime(UUID id) {

@@ -3,11 +3,22 @@ package edu.kvcc.cis298.inclass3.inclass3;
 import android.net.Uri;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Created by aaernie7528 on 12/7/2015.
@@ -64,18 +75,55 @@ public class CrimeFetcher {
     //method to get the string result from the http web address
     //The url bytes representing the data get returned from the
     //getURLBytes method, and are then transformed into a string
-    public String getUrlString(String urlSpec) throws IOException {
+    private String getUrlString(String urlSpec) throws IOException {
         return new String(getUrlBytes(urlSpec));
     }
 
-    public void fetchCrimes() {
+    public List<Crime> fetchCrimes() {
+
+        List<Crime> crimes = new ArrayList<>();
+
         try {
             String url = Uri.parse("http://barnesbrothers.homeserver.com/crimeapi").buildUpon().build().toString();
             String jsonString = getUrlString(url);
-            Log.i(TAG, "Recieved JSON: " + jsonString);
+            JSONArray jsonArray = new JSONArray(jsonString);
+
+            parseCrimes(crimes,jsonArray);
+
+            Log.i(TAG, "Received JSON: " + jsonString);
+        } catch (JSONException je) {
+            Log.i(TAG, "Failed to Parse", je);
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items; " + ioe);
         }
+
+        return crimes;
     }
+
+    private void parseCrimes(List<Crime> crimes, JSONArray jsonArray)
+        throws IOException, JSONException {
+
+        for (int i=0; i < jsonArray.length(); i++) {
+            JSONObject crimeJsonObject = jsonArray.getJSONObject(i);
+
+            String uuidString = crimeJsonObject.getString("uuid");
+            UUID uuidForNewCrime = UUID.fromString(uuidString);
+            Crime crime = new Crime(uuidForNewCrime);
+
+            crime.setTitle(crimeJsonObject.getString("title"));
+            try {
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+                Date date = format.parse(crimeJsonObject.getString("incident_date"));
+                crime.setDate(date);
+            } catch (Exception e){
+                crime.setDate(new Date());
+            }
+
+            crime.setSolved(crimeJsonObject.getString("is_solved").equals("1"));
+
+            crimes.add(crime);
+        }
+    }
+
 
 }
